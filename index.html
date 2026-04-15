@@ -1,615 +1,1248 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>���꼭 ���� ����</title>
-<style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>러너로지스 운영 가이드</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-  body {
-    font-family: 'Noto Sans KR', -apple-system, sans-serif;
-    background: #F4F6F9;
-    color: #1A1A2E;
-    min-height: 100vh;
-  }
+        :root {
+            --primary: #F97316;
+            --primary-dark: #EA580C;
+            --secondary: #2563EB;
+            --text: #1F2937;
+            --text-light: #6B7280;
+            --border: #E5E7EB;
+            --bg: #F9FAFB;
+            --white: #FFFFFF;
+        }
 
-  .hidden { display: none !important; }
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background: linear-gradient(135deg, #FFF7ED 0%, #F0F9FF 100%);
+            color: var(--text);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
 
-  .spinner {
-    display: inline-block; width: 16px; height: 16px;
-    border: 2px solid #ddd; border-top-color: #185FA5;
-    border-radius: 50%; animation: spin 0.6s linear infinite;
-    vertical-align: middle; margin-right: 6px;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
+        header {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border);
+            sticky top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
 
-  .toast {
-    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
-    background: #1A1A2E; color: #fff; padding: 10px 20px;
-    border-radius: 8px; font-size: 13px; z-index: 9999;
-    opacity: 0; transition: opacity 0.3s; pointer-events: none; white-space: nowrap;
-  }
-  .toast.show { opacity: 1; }
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
 
-  /* ���� �α��� ���� */
-  #screen-login {
-    display: flex; align-items: center; justify-content: center;
-    min-height: 100vh; padding: 1rem;
-  }
-  .login-card {
-    background: #fff; border-radius: 16px;
-    box-shadow: 0 4px 24px rgba(0,0,0,0.08);
-    padding: 2.5rem 2rem; width: 100%; max-width: 400px;
-  }
-  .login-logo { text-align: center; margin-bottom: 2rem; }
-  .login-logo .icon-wrap {
-    width: 56px; height: 56px; background: #EBF3FC;
-    border-radius: 14px; display: inline-flex;
-    align-items: center; justify-content: center; margin-bottom: 12px;
-  }
-  .login-logo h1 { font-size: 20px; font-weight: 700; }
-  .login-logo p  { font-size: 13px; color: #888; margin-top: 4px; }
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
 
-  .form-group { margin-bottom: 16px; }
-  .form-group label { display: block; font-size: 13px; font-weight: 600; color: #555; margin-bottom: 6px; }
-  .form-group input {
-    width: 100%; padding: 11px 14px;
-    border: 1.5px solid #E0E4EB; border-radius: 8px;
-    font-size: 15px; outline: none; transition: border-color 0.2s;
-  }
-  .form-group input:focus { border-color: #185FA5; }
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+        }
 
-  .btn-login {
-    width: 100%; padding: 12px; background: #185FA5; color: #fff;
-    border: none; border-radius: 8px; font-size: 15px; font-weight: 600;
-    cursor: pointer; margin-top: 4px; transition: background 0.2s;
-  }
-  .btn-login:hover:not(:disabled) { background: #0C447C; }
-  .btn-login:disabled { background: #aaa; cursor: not-allowed; }
+        nav {
+            display: flex;
+            gap: 2rem;
+        }
 
-  .login-error {
-    background: #FFF0F0; color: #C0392B; border-radius: 8px;
-    padding: 10px 14px; font-size: 13px; margin-top: 12px;
-  }
+        nav a {
+            text-decoration: none;
+            color: var(--text-light);
+            font-size: 0.95rem;
+            transition: color 0.3s;
+        }
 
-  /* ���� ��ú��� ���� */
-  #screen-dash { display: none; }
+        nav a:hover {
+            color: var(--primary);
+        }
 
-  .topbar {
-    background: #fff; border-bottom: 1px solid #E8ECF2;
-    padding: 0 1.5rem; height: 56px;
-    display: flex; align-items: center; justify-content: space-between;
-    position: sticky; top: 0; z-index: 100;
-  }
-  .topbar-left { display: flex; align-items: center; gap: 10px; }
-  .topbar-logo { font-size: 16px; font-weight: 700; color: #185FA5; }
-  .topbar-divider { width: 1px; height: 20px; background: #E0E4EB; }
-  .topbar-user { font-size: 14px; color: #555; }
-  .topbar-user strong { color: #1A1A2E; }
-  .btn-logout {
-    font-size: 13px; color: #888; background: none;
-    border: 1px solid #E0E4EB; border-radius: 6px;
-    padding: 5px 12px; cursor: pointer;
-  }
-  .btn-logout:hover { background: #F4F6F9; }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
 
-  .main-content { max-width: 1040px; margin: 0 auto; padding: 1.5rem 1rem; }
+        .hero {
+            text-align: center;
+            margin-bottom: 3rem;
+            animation: fadeInDown 0.6s ease-out;
+        }
 
-  /* ��� ī�� */
-  .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px,1fr)); gap: 12px; margin-bottom: 1.5rem; }
-  .summary-card { background:#fff; border-radius:12px; padding:1rem 1.25rem; border:1px solid #E8ECF2; }
-  .summary-card .s-label { font-size:12px; color:#888; margin-bottom:6px; }
-  .summary-card .s-value { font-size:20px; font-weight:700; color:#1A1A2E; }
-  .summary-card .s-value.blue { color:#185FA5; }
+        .hero h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
 
-  /* 2�÷� ���̾ƿ� */
-  .two-col { display: grid; grid-template-columns: 320px 1fr; gap: 16px; align-items: start; }
-  @media (max-width: 720px) { .two-col { grid-template-columns: 1fr; } }
+        .hero p {
+            font-size: 1.1rem;
+            color: var(--text-light);
+        }
 
-  /* ��� �г� */
-  .panel { background:#fff; border-radius:12px; border:1px solid #E8ECF2; overflow:hidden; }
-  .panel-header {
-    padding: 14px 16px 10px; border-bottom: 1px solid #E8ECF2;
-    font-size: 14px; font-weight: 600; color: #1A1A2E;
-    display: flex; align-items: center; justify-content: space-between;
-  }
-  .panel-badge { font-size:12px; background:#EBF3FC; color:#185FA5; padding:2px 8px; border-radius:99px; }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
 
-  /* ���� �׷� */
-  .year-group { border-bottom: 1px solid #F0F2F5; }
-  .year-group:last-child { border-bottom: none; }
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            animation: fadeInUp 0.6s ease-out;
+        }
 
-  .year-header {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 10px 16px; cursor: pointer;
-    background: #F8FAFD;
-    font-size: 13px; font-weight: 700; color: #185FA5;
-    user-select: none;
-  }
-  .year-header:hover { background: #EBF3FC; }
-  .year-arrow { font-size: 11px; color: #aaa; transition: transform 0.2s; }
-  .year-arrow.open { transform: rotate(180deg); }
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(249, 115, 22, 0.1);
+            border-color: var(--primary);
+        }
 
-  .month-list { display: none; }
-  .month-list.open { display: block; }
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
 
-  .month-item {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 10px 16px 10px 28px; cursor: pointer;
-    border-bottom: 1px solid #F4F6F9; transition: background 0.15s;
-  }
-  .month-item:last-child { border-bottom: none; }
-  .month-item:hover { background: #F8FAFD; }
-  .month-item.active { background: #EBF3FC; }
-  .month-item .m-label { font-size: 14px; font-weight: 600; color: #1A1A2E; }
-  .month-item .m-sub   { font-size: 12px; color: #888; margin-top: 2px; }
-  .pdf-badge { font-size:11px; padding:2px 8px; border-radius:99px; background:#E8F5E9; color:#2E7D32; font-weight:600; }
+        .card-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
 
-  .file-list-wrap { max-height: 500px; overflow-y: auto; }
-  .empty-msg { padding: 2.5rem 1rem; text-align:center; color:#aaa; font-size:14px; }
+        .card-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--text);
+        }
 
-  /* ��� �г� */
-  .viewer-panel { background:#fff; border-radius:12px; border:1px solid #E8ECF2; overflow:hidden; }
-  .viewer-placeholder { padding:5rem 2rem; text-align:center; }
-  .viewer-placeholder .v-icon { font-size:40px; margin-bottom:12px; }
-  .viewer-placeholder p { font-size:14px; color:#aaa; }
+        .card-description {
+            color: var(--text-light);
+            font-size: 0.95rem;
+            margin-bottom: 1rem;
+        }
 
-  .viewer-header {
-    padding: 1rem 1.25rem; border-bottom: 1px solid #E8ECF2;
-    display: flex; align-items: flex-start; gap: 12px;
-  }
-  .vh-icon { font-size:28px; flex-shrink:0; }
-  .vh-info { flex: 1; }
-  .vh-period { font-size:18px; font-weight:700; color:#1A1A2E; }
-  .vh-filename { font-size:13px; color:#888; margin-top:3px; }
-  .vh-meta { font-size:12px; color:#aaa; margin-top:2px; }
+        .card-link {
+            display: inline-block;
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.95rem;
+            transition: all 0.3s;
+            border-bottom: 2px solid transparent;
+            padding-bottom: 2px;
+        }
 
-  .viewer-actions { padding:1rem 1.25rem; display:flex; gap:8px; }
-  .btn-view-pdf {
-    flex:1; padding:10px;
-    border:1.5px solid #185FA5; border-radius:8px;
-    background:#fff; color:#185FA5;
-    font-size:14px; font-weight:600; cursor:pointer; transition:background 0.15s;
-  }
-  .btn-view-pdf:hover { background:#EBF3FC; }
-  .btn-download {
-    flex:1; padding:10px; border:none; border-radius:8px;
-    background:#185FA5; color:#fff;
-    font-size:14px; font-weight:600; cursor:pointer; transition:background 0.2s;
-  }
-  .btn-download:hover:not(:disabled) { background:#0C447C; }
-  .btn-download:disabled { background:#aaa; cursor:not-allowed; }
+        .card-link:hover {
+            border-bottom-color: var(--primary);
+            padding-left: 4px;
+        }
 
-  .pdf-frame-wrap { padding:0 1rem 1rem; }
-  #pdf-frame { width:100%; height:520px; border:1px solid #E8ECF2; border-radius:8px; display:none; }
+        .section-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin: 3rem 0 1.5rem 0;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
 
-  /* ��й�ȣ ���� */
-  .pw-section { margin-top:1.5rem; background:#fff; border-radius:12px; border:1px solid #E8ECF2; overflow:hidden; }
-  .pw-toggle {
-    width:100%; padding:14px 16px; background:none; border:none;
-    text-align:left; font-size:14px; font-weight:600; color:#555;
-    cursor:pointer; display:flex; align-items:center; justify-content:space-between;
-  }
-  .pw-toggle:hover { background:#F8FAFD; }
-  .pw-form { padding:0 16px 16px; display:none; }
-  .pw-form.open { display:block; }
-  .pw-row { display:flex; gap:8px; flex-wrap:wrap; margin-top:12px; }
-  .pw-row input {
-    flex:1; min-width:130px; padding:9px 12px;
-    border:1.5px solid #E0E4EB; border-radius:8px; font-size:14px; outline:none;
-  }
-  .pw-row input:focus { border-color:#185FA5; }
-  .btn-pw-change {
-    padding:9px 18px; background:#185FA5; color:#fff;
-    border:none; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer;
-  }
-  .pw-msg { font-size:13px; margin-top:8px; }
-  .pw-msg.ok { color:#2E7D32; }
-  .pw-msg.err { color:#C0392B; }
-</style>
+        .section-title::before {
+            content: '';
+            width: 4px;
+            height: 28px;
+            background: linear-gradient(180deg, var(--primary), var(--primary-dark));
+            border-radius: 2px;
+        }
+
+        .process-steps {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            border: 1px solid var(--border);
+            margin-bottom: 2rem;
+        }
+
+        .step {
+            display: flex;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .step:last-child {
+            margin-bottom: 0;
+        }
+
+        .step-number {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            flex-shrink: 0;
+            font-size: 1.1rem;
+        }
+
+        .step-content h3 {
+            color: var(--text);
+            margin-bottom: 0.5rem;
+            font-size: 1.05rem;
+        }
+
+        .step-content p {
+            color: var(--text-light);
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        .step-content ul {
+            list-style: none;
+            margin: 0.5rem 0 0 0;
+            padding-left: 0;
+        }
+
+        .step-content li {
+            color: var(--text-light);
+            margin-bottom: 0.3rem;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+
+        .step-content li::before {
+            content: '→';
+            position: absolute;
+            left: 0;
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .info-box {
+            background: linear-gradient(135deg, rgba(249, 115, 22, 0.05), rgba(37, 99, 235, 0.05));
+            border: 1px solid var(--border);
+            border-left: 4px solid var(--primary);
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+
+        .info-box strong {
+            color: var(--primary);
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        .cost-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+        }
+
+        .cost-table th {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            padding: 0.75rem;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .cost-table td {
+            padding: 0.75rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .cost-table tr:hover {
+            background: var(--bg);
+        }
+
+        .cost-table .cost {
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .cta-button {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+            font-size: 0.95rem;
+            margin-top: 0.5rem;
+        }
+
+        .cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(249, 115, 22, 0.3);
+        }
+
+        .quick-contact {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .quick-contact h3 {
+            color: var(--primary);
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .contact-item:last-child {
+            border-bottom: none;
+        }
+
+        .contact-label {
+            font-weight: 600;
+            color: var(--text);
+            min-width: 100px;
+        }
+
+        .contact-value {
+            color: var(--primary);
+            font-weight: 500;
+        }
+
+        .copy-btn {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            padding: 0.3rem 0.6rem;
+            border-radius: 4px;
+            cursor: pointer;
+            color: var(--text-light);
+            font-size: 0.8rem;
+            transition: all 0.2s;
+            margin-left: auto;
+        }
+
+        .copy-btn:hover {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .timeline-container {
+            position: relative;
+            padding: 0;
+        }
+
+        .timeline-step {
+            position: relative;
+            padding: 0 0 2rem 0;
+            margin-bottom: 0.5rem;
+        }
+
+        .timeline-step:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            left: 20px;
+            top: 50px;
+            width: 2px;
+            height: calc(100% + 20px);
+            background: linear-gradient(180deg, var(--primary), var(--primary) 50%, transparent);
+            z-index: 0;
+        }
+
+        .step-marker {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 1.1rem;
+            box-shadow: 0 2px 8px rgba(249, 115, 22, 0.2);
+            z-index: 2;
+        }
+
+        .step-content-card {
+            margin-left: 60px;
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.25rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            z-index: 1;
+        }
+
+        .step-content-card:hover {
+            box-shadow: 0 4px 12px rgba(249, 115, 22, 0.1);
+            border-color: var(--primary);
+        }
+
+        .step-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+        }
+
+        .step-title {
+            font-weight: 600;
+            color: var(--text);
+            font-size: 1rem;
+            flex: 1;
+        }
+
+        .step-toggle {
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+            font-weight: bold;
+            flex-shrink: 0;
+            transition: transform 0.3s ease;
+        }
+
+        .step-content-card.active .step-toggle {
+            transform: rotate(180deg);
+        }
+
+        .step-description {
+            display: none;
+            margin-top: 0.75rem;
+            padding-top: 0.75rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .step-content-card.active .step-description {
+            display: block;
+        }
+
+        .step-details {
+            list-style: none;
+            padding: 0;
+        }
+
+        .step-details li {
+            padding: 0.5rem 0;
+            color: var(--text-light);
+            font-size: 0.95rem;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+
+        .step-details li::before {
+            content: '→';
+            position: absolute;
+            left: 0;
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .step-cost {
+            background: linear-gradient(135deg, rgba(249, 115, 22, 0.05), rgba(249, 115, 22, 0.02));
+            border-left: 3px solid var(--primary);
+            padding: 0.75rem 1rem;
+            border-radius: 6px;
+            margin-top: 1rem;
+            font-size: 0.95rem;
+        }
+
+        .step-cost strong {
+            color: var(--primary);
+            display: block;
+            margin-bottom: 0.25rem;
+        }
+
+        .step-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, rgba(249, 115, 22, 0.1), rgba(249, 115, 22, 0.05));
+            color: var(--primary);
+            padding: 0.35rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-top: 0.5rem;
+        }
+
+        .step-summary {
+            color: var(--text-light);
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-light);
+            margin-top: 3rem;
+            border-top: 1px solid var(--border);
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .badge {
+            display: inline-block;
+            background: linear-gradient(135deg, rgba(249, 115, 22, 0.1), rgba(249, 115, 22, 0.05));
+            color: var(--primary);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-left: 0.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 1.8rem;
+            }
+
+            nav {
+                display: none;
+            }
+
+            .grid {
+                grid-template-columns: 1fr;
+            }
+
+            .header-content {
+                padding: 1rem;
+            }
+
+            .container {
+                padding: 1rem;
+            }
+
+            .timeline-step {
+                margin-bottom: 1rem;
+            }
+
+            .step-content-card {
+                margin-left: 50px;
+                padding: 1rem;
+            }
+
+            .step-marker {
+                width: 36px;
+                height: 36px;
+                font-size: 0.9rem;
+                left: -2px;
+            }
+
+            .step-title {
+                font-size: 0.95rem;
+            }
+
+            .step-summary {
+                font-size: 0.85rem;
+            }
+
+            .step-details li {
+                font-size: 0.9rem;
+                padding: 0.4rem 0;
+            }
+
+            .step-cost {
+                font-size: 0.9rem;
+            }
+
+            .cost-table {
+                font-size: 0.85rem;
+            }
+
+            .cost-table th,
+            .cost-table td {
+                padding: 0.6rem;
+            }
+
+            .step-badge {
+                font-size: 0.75rem;
+                padding: 0.25rem 0.6rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .hero h1 {
+                font-size: 1.5rem;
+            }
+
+            .section-title {
+                font-size: 1.4rem;
+            }
+
+            .container {
+                padding: 0.75rem;
+            }
+
+            .card {
+                padding: 1rem;
+            }
+
+            .timeline-step:not(:last-child)::after {
+                left: 14px;
+                width: 1.5px;
+            }
+
+            .step-marker {
+                width: 32px;
+                height: 32px;
+                font-size: 0.85rem;
+                left: 0;
+                top: 2px;
+            }
+
+            .step-content-card {
+                margin-left: 48px;
+                padding: 0.9rem;
+            }
+
+            .step-header {
+                gap: 0.5rem;
+            }
+
+            .step-title {
+                font-size: 0.9rem;
+            }
+
+            .step-summary {
+                font-size: 0.8rem;
+                margin-top: 0.25rem;
+            }
+
+            .step-details li {
+                font-size: 0.85rem;
+                padding: 0.3rem 0;
+                padding-left: 1.2rem;
+            }
+
+            .step-toggle {
+                width: 20px;
+                height: 20px;
+                font-size: 0.8rem;
+                flex-shrink: 0;
+            }
+
+            .cost-table {
+                font-size: 0.8rem;
+            }
+
+            .info-box {
+                padding: 0.75rem;
+            }
+
+            .contact-item {
+                flex-wrap: wrap;
+                gap: 0.5rem;
+            }
+
+            .contact-label {
+                min-width: 80px;
+                font-size: 0.9rem;
+            }
+
+            .cta-button {
+                padding: 0.5rem 1rem;
+                font-size: 0.85rem;
+            }
+        }
+    </style>
 </head>
 <body>
-
-<!-- ?????? �α��� ?????? -->
-<div id="screen-login">
-  <div class="login-card">
-    <div class="login-logo">
-      <div class="icon-wrap">
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none"
-             stroke="#185FA5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="1" y="3" width="15" height="13" rx="2"/>
-          <path d="M16 8l5 3-5 3V8z"/>
-        </svg>
-      </div>
-      <h1>���꼭 ���� ����</h1>
-      <p>���̵�� ��й�ȣ�� �Է��ϼ���</p>
-    </div>
-    <div class="form-group">
-      <label for="inp-id">���̵�</label>
-      <input type="text" id="inp-id" placeholder="��� ���̵�" autocomplete="username">
-    </div>
-    <div class="form-group">
-      <label for="inp-pw">��й�ȣ</label>
-      <input type="password" id="inp-pw" placeholder="������ ���� ��й�ȣ" autocomplete="current-password">
-    </div>
-    <button class="btn-login" id="btn-login" onclick="doLogin()">�α���</button>
-    <div class="login-error hidden" id="login-error"></div>
-  </div>
-</div>
-
-
-<!-- ?????? ��ú��� ?????? -->
-<div id="screen-dash">
-
-  <div class="topbar">
-    <div class="topbar-left">
-      <span class="topbar-logo">?? ���꼭 ����</span>
-      <div class="topbar-divider"></div>
-      <span class="topbar-user" id="topbar-user"></span>
-    </div>
-    <button class="btn-logout" onclick="doLogout()">�α׾ƿ�</button>
-  </div>
-
-  <div class="main-content">
-
-    <!-- ��� -->
-    <div class="summary-grid">
-      <div class="summary-card">
-        <div class="s-label">�� ���꼭</div>
-        <div class="s-value blue" id="sum-total">?</div>
-      </div>
-      <div class="summary-card">
-        <div class="s-label">���� ����</div>
-        <div class="s-value" id="sum-years" style="font-size:15px;">?</div>
-      </div>
-      <div class="summary-card">
-        <div class="s-label">�ֱ� ����</div>
-        <div class="s-value" id="sum-latest" style="font-size:15px;">?</div>
-      </div>
-    </div>
-
-    <div class="two-col">
-
-      <!-- ��� �г� -->
-      <div class="panel">
-        <div class="panel-header">
-          ���꼭 ���
-          <span class="panel-badge" id="list-badge">0��</span>
-        </div>
-        <div class="file-list-wrap" id="file-list-wrap">
-          <div class="empty-msg"><span class="spinner"></span> ����̺꿡�� �ҷ����� ��...</div>
-        </div>
-      </div>
-
-      <!-- ��� �г� -->
-      <div class="viewer-panel" id="viewer-panel">
-        <div id="viewer-placeholder" class="viewer-placeholder">
-          <div class="v-icon">??</div>
-          <p>�������� ���� �����ϸ�<br>���꼭�� ǥ�õ˴ϴ�</p>
-        </div>
-        <div id="viewer-content" class="hidden">
-          <div class="viewer-header">
-            <div class="vh-icon">??</div>
-            <div class="vh-info">
-              <div class="vh-period" id="v-period"></div>
-              <div class="vh-filename" id="v-filename"></div>
-              <div class="vh-meta" id="v-meta"></div>
+    <header>
+        <div class="header-content">
+            <div class="logo">
+                <div class="logo-icon">🚚</div>
+                <span>러너로지스</span>
             </div>
-          </div>
-          <div class="viewer-actions">
-            <button class="btn-view-pdf" onclick="viewPdf()">?? ����</button>
-            <button class="btn-download" id="btn-dl" onclick="downloadPdf()">? �ٿ�ε�</button>
-          </div>
-          <div class="pdf-frame-wrap">
-            <iframe id="pdf-frame" title="���꼭 �̸�����"></iframe>
-          </div>
+            <nav>
+                <a href="#quick-start">빠른시작</a>
+                <a href="#procedures">절차안내</a>
+                <a href="#contact">연락처</a>
+            </nav>
         </div>
-      </div>
+    </header>
 
+    <div class="container">
+        <div class="hero">
+            <h1>러너로지스 운영 가이드</h1>
+            <p>배송기사 등록부터 업무 완료까지 필요한 모든 정보</p>
+        </div>
+
+        <!-- Quick Start Section -->
+        <h2 class="section-title" id="quick-start">빠른 시작</h2>
+        <div class="grid">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">📋</div>
+                    <div class="card-title">배번호 신청</div>
+                </div>
+                <p class="card-description">배송기사 배번호 신청 및 계좌정보 등록</p>
+                <a href="https://forms.gle/W3jcDGWmP8g6AKGVA" class="card-link" target="_blank">양식 작성 →</a>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">🏪</div>
+                    <div class="card-title">러너 벤더 가입</div>
+                </div>
+                <p class="card-description">쿠팡 러너 벤더 가입 프로세스</p>
+                <a href="https://dfs.coupang.com/dfs/qf-onboarding?COU000003236" class="card-link" target="_blank">가입 링크 →</a>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">🔑</div>
+                    <div class="card-title">플렉스 계정관리</div>
+                </div>
+                <p class="card-description">플렉스 아이디 비밀번호 변경</p>
+                <div class="info-box">
+                    <strong>공용 비밀번호:</strong>
+                    <span style="font-family: 'DM Mono'; font-weight: 600;">Password1!</span>
+                </div>
+                <p style="font-size: 0.9rem; color: var(--text-light); margin-top: 0.5rem;">로그아웃 → 비밀번호 찾기 → 인증 → 비밀번호 생성</p>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">💬</div>
+                    <div class="card-title">캠프 소통창구</div>
+                </div>
+                <p class="card-description">팀즈(Teams) 앱을 통한 캠프 소통</p>
+                <p style="font-size: 0.9rem; color: var(--text-light); margin-top: 0.5rem;">필수 설치 애플리케이션</p>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">✅</div>
+                    <div class="card-title">업무완료 서베이</div>
+                </div>
+                <p class="card-description">러너 업무 완료 후 배송관리 서베이</p>
+                <a href="https://forms.gle/3xgbFp3Q4BFqAH7YA" class="card-link" target="_blank">서베이 작성 →</a>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">📞</div>
+                    <div class="card-title">쿠팡 핫라인</div>
+                </div>
+                <p class="card-description">배송 및 회수 과정 중 고객 연락</p>
+                <div class="info-box">
+                    <strong>전화번호:</strong>
+                    <span style="font-family: 'DM Mono'; font-weight: 600; font-size: 1.1rem;">1661-1151</span>
+                </div>
+                <p style="font-size: 0.85rem; color: var(--text-light); margin-top: 0.5rem;">또는 안심번호 발급 가능</p>
+            </div>
+        </div>
+
+        <!-- Important Resources -->
+        <h2 class="section-title">중요 자료</h2>
+        <div class="grid">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">🧾</div>
+                    <div class="card-title">전자 세금계산서</div>
+                </div>
+                <p class="card-description">전자 세금계산서 발행 방법 안내</p>
+                <a href="https://youtu.be/2fyg05uKdPQ?si=AycStWm9UfgLwOAx" class="card-link" target="_blank">영상 보기 →</a>
+            </div>
+        </div>
+
+        <!-- Detailed Procedures -->
+        <h2 class="section-title" id="procedures">배번호 신청 상세절차</h2>
+        
+        <!-- Mobile-Optimized Timeline -->
+        <div class="timeline-container">
+            <!-- Step 1 -->
+            <div class="timeline-step">
+                <div class="step-marker">1</div>
+                <div class="step-content-card active" onclick="toggleStep(this)">
+                    <div class="step-header">
+                        <div>
+                            <div class="step-title">관할 시청에서 예비허가증 신청</div>
+                            <div class="step-summary">처리 기간: 1일</div>
+                        </div>
+                        <div class="step-toggle">▼</div>
+                    </div>
+                    <div class="step-description">
+                        <ul class="step-details">
+                            <li>주소지 관할 시청 방문</li>
+                            <li>화물자동차운송사업 예비허가증 신청</li>
+                            <li>필요 서류: 신분증, 인감도장</li>
+                            <li>1~2시간 내 카톡 또는 문자로 수령 가능</li>
+                            <li>다음 단계 진행 전 반드시 필요</li>
+                        </ul>
+                        <div class="step-badge">필수</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 2 -->
+            <div class="timeline-step">
+                <div class="step-marker">2</div>
+                <div class="step-content-card" onclick="toggleStep(this)">
+                    <div class="step-header">
+                        <div>
+                            <div class="step-title">화물보험 가입 (선행필수)</div>
+                            <div class="step-summary">비용: 보험료 별도 (300,000~500,000원)</div>
+                        </div>
+                        <div class="step-toggle">▼</div>
+                    </div>
+                    <div class="step-description">
+                        <ul class="step-details">
+                            <li>차량등록소 방문 전에 반드시 완료</li>
+                            <li>보험사에서 화물보험 가입</li>
+                            <li>보험료는 보험사별로 상이</li>
+                            <li>보험증명서를 발급받아 지참</li>
+                            <li>다음 단계에서 차량등록소에 제출</li>
+                        </ul>
+                        <div class="step-cost">
+                            <strong>⚠️ 주의사항</strong>
+                            차량등록소 방문 전에 반드시 완료해야 합니다. 이 단계를 생략하면 배번호를 받을 수 없습니다.
+                        </div>
+                        <div class="step-badge">매우중요</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 3 -->
+            <div class="timeline-step">
+                <div class="step-marker">3</div>
+                <div class="step-content-card" onclick="toggleStep(this)">
+                    <div class="step-header">
+                        <div>
+                            <div class="step-title">차량등록소 방문</div>
+                            <div class="step-summary">비용: 30,300원</div>
+                        </div>
+                        <div class="step-toggle">▼</div>
+                    </div>
+                    <div class="step-description">
+                        <h4 style="margin: 0.75rem 0 0.5rem; color: var(--primary); font-weight: 600;">준비물</h4>
+                        <ul class="step-details">
+                            <li>배번호 발급받을 화물차 (반드시 지참)</li>
+                            <li>신분증, 예비허가증</li>
+                            <li>화물보험증명서</li>
+                            <li>기존 차량등록증</li>
+                        </ul>
+                        
+                        <h4 style="margin: 1rem 0 0.5rem; color: var(--primary); font-weight: 600;">진행 절차</h4>
+                        <ul class="step-details">
+                            <li>기존 번호판을 차량에서 제거</li>
+                            <li>제거한 번호판을 창구에 반납</li>
+                            <li>자동차 변경등록 신청서 작성</li>
+                            <li>수수료 납부</li>
+                            <li>새로운 배번호 번호판 수령</li>
+                            <li>새 차량등록증 수령</li>
+                        </ul>
+                        
+                        <div class="step-cost">
+                            <strong>💰 소요 비용</strong>
+                            접수비 1,300원 + 지방세 15,000원 + 번호판 발급비 14,000원 = <strong>30,300원</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 4 -->
+            <div class="timeline-step">
+                <div class="step-marker">4</div>
+                <div class="step-content-card" onclick="toggleStep(this)">
+                    <div class="step-header">
+                        <div>
+                            <div class="step-title">운송사업협회 방문</div>
+                            <div class="step-summary">비용: 30,000원</div>
+                        </div>
+                        <div class="step-toggle">▼</div>
+                    </div>
+                    <div class="step-description">
+                        <h4 style="margin: 0.75rem 0 0.5rem; color: var(--primary); font-weight: 600;">필수 구비서류</h4>
+                        <ul class="step-details">
+                            <li>화물운송자격증</li>
+                            <li>운전면허증</li>
+                            <li>주민등록등본</li>
+                            <li>자동차등록증</li>
+                            <li><strong style="color: #E24B4A;">택배전속계약서 (❗가장 중요!)</strong></li>
+                            <li>반명함 또는 증명사진 2장</li>
+                            <li>자동이체통장사본 (관리비 5,000원/월)</li>
+                            <li>사업자등록증 (유가보조금 신청시)</li>
+                        </ul>
+                        
+                        <h4 style="margin: 1rem 0 0.5rem; color: var(--primary); font-weight: 600;">발급받는 서류</h4>
+                        <ul class="step-details">
+                            <li>화물운송자격증 (배번호가 새겨짐)</li>
+                            <li>배번호 등록증명서</li>
+                            <li>택배 운송사업 등록증</li>
+                        </ul>
+                        
+                        <div class="step-cost">
+                            <strong>💳 택배등록비</strong>
+                            30,000원 (카드대납 가능)
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 5 -->
+            <div class="timeline-step">
+                <div class="step-marker">5</div>
+                <div class="step-content-card" onclick="toggleStep(this)">
+                    <div class="step-header">
+                        <div>
+                            <div class="step-title">최종 시청 방문</div>
+                            <div class="step-summary">비용: 27,000원</div>
+                        </div>
+                        <div class="step-toggle">▼</div>
+                    </div>
+                    <div class="step-description">
+                        <ul class="step-details">
+                            <li>관할 시청에서 최종 허가증 수령</li>
+                            <li>운전면허세 27,000원 납부</li>
+                            <li>화물자동차 운송사업 허가증 발급</li>
+                        </ul>
+                        
+                        <h4 style="margin: 1rem 0 0.5rem; color: var(--primary); font-weight: 600;">보관해야 할 서류</h4>
+                        <ul class="step-details">
+                            <li>차량등록증 사본 1장</li>
+                            <li>화물자동차 운송사업 허가증 1장</li>
+                            <li>배번호 자동차등록증 사본 1장</li>
+                            <li>화물운송자격증 사본 1장</li>
+                            <li>배번호 허가증 사본 1장</li>
+                        </ul>
+
+                        <div class="step-badge" style="background: #EAF3DE;">완료</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 6 -->
+            <div class="timeline-step">
+                <div class="step-marker">6</div>
+                <div class="step-content-card" onclick="toggleStep(this)">
+                    <div class="step-header">
+                        <div>
+                            <div class="step-title">번호판 부착 및 배송 시작</div>
+                            <div class="step-summary">최종 완료</div>
+                        </div>
+                        <div class="step-toggle">▼</div>
+                    </div>
+                    <div class="step-description">
+                        <h4 style="margin: 0.75rem 0 0.5rem; color: var(--primary); font-weight: 600;">번호판 부착</h4>
+                        <ul class="step-details">
+                            <li>차량등록소에서 받은 새 번호판</li>
+                            <li>차량 전면과 후면에 견고하게 부착</li>
+                            <li>번호판이 읽기 좋은지 확인</li>
+                            <li>번호판 손상 여부 확인</li>
+                        </ul>
+                        
+                        <h4 style="margin: 1rem 0 0.5rem; color: var(--primary); font-weight: 600;">배송 준비</h4>
+                        <ul class="step-details">
+                            <li>플렉스 시스템에 배번호 등록</li>
+                            <li>쿠팡 러너 앱에서 배번호 확인</li>
+                            <li>배송업무 시작 가능</li>
+                        </ul>
+
+                        <div class="step-cost">
+                            <strong>✅ 축하합니다!</strong>
+                            모든 절차가 완료되었습니다. 이제 배송을 시작할 수 있습니다.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cost Summary -->
+        <div class="info-box" style="margin: 2rem 0; border-left: 4px solid var(--secondary);">
+            <strong style="color: var(--secondary);">💡 전체 소요 비용 정리</strong>
+            <div style="margin-top: 1rem;">
+                <table class="cost-table" style="margin: 0;">
+                    <tr>
+                        <td><strong>화물보험 (선행 필수)</strong></td>
+                        <td class="cost" style="text-align: right;"><strong>300,000~500,000원</strong></td>
+                    </tr>
+                    <tr>
+                        <td><strong>차량등록소</strong></td>
+                        <td class="cost" style="text-align: right;"><strong>30,300원</strong></td>
+                    </tr>
+                    <tr>
+                        <td><strong>운송협회</strong></td>
+                        <td class="cost" style="text-align: right;"><strong>30,000원</strong></td>
+                    </tr>
+                    <tr>
+                        <td><strong>시청 (운전면허세)</strong></td>
+                        <td class="cost" style="text-align: right;"><strong>27,000원</strong></td>
+                    </tr>
+                    <tr style="background: linear-gradient(135deg, rgba(249, 115, 22, 0.05), rgba(249, 115, 22, 0.02));">
+                        <td><strong style="font-size: 1.05rem;">합계 (보험료 제외)</strong></td>
+                        <td class="cost" style="text-align: right; font-size: 1.1rem;"><strong>87,300원</strong></td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <h3>화물자동차운송사업 예비허가증 신청</h3>
+                    <p>관할 시청에서 예비허가증을 신청하고 수령합니다.</p>
+                    <p style="margin-top: 0.5rem; color: var(--primary); font-weight: 600;">⏱️ 1일 처리가능</p>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <h3>차량등록소 방문</h3>
+                    <p><strong style="color: var(--primary);">필수 조건:</strong> 화물보험 가입 (선행 필수)</p>
+                    <p style="margin-top: 0.5rem;"><strong>준비물:</strong></p>
+                    <ul>
+                        <li>배넘버 발급 받을 화물차</li>
+                        <li>신분증</li>
+                        <li>예비허가증</li>
+                    </ul>
+                    <p style="margin-top: 0.5rem;"><strong>진행 절차:</strong></p>
+                    <ul>
+                        <li>차량번호판 제거 (창구에 반납)</li>
+                        <li>자동차 변경등록 신청서 작성 (차량등록소 비치)</li>
+                    </ul>
+                    <div style="margin-top: 1rem; background: var(--bg); padding: 0.75rem; border-radius: 8px;">
+                        <p style="font-weight: 600; margin-bottom: 0.5rem;">💰 필요 금액:</p>
+                        <table class="cost-table">
+                            <tr>
+                                <td>접수비</td>
+                                <td class="cost">1,300원</td>
+                            </tr>
+                            <tr>
+                                <td>지방세</td>
+                                <td class="cost">15,000원</td>
+                            </tr>
+                            <tr>
+                                <td>번호판 발급비</td>
+                                <td class="cost">14,000원</td>
+                            </tr>
+                            <tr style="border-top: 2px solid var(--primary);">
+                                <td><strong>합계</strong></td>
+                                <td class="cost" style="font-size: 1.05rem;"><strong>30,300원</strong></td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <h3>용달화물자동차 운송사업협회 방문</h3>
+                    <p><strong style="color: var(--primary);">필수 구비서류:</strong></p>
+                    <ul>
+                        <li>화물운송자격증</li>
+                        <li>운전면허증</li>
+                        <li>주민등록등본</li>
+                        <li>자동차등록증</li>
+                        <li>택배전속계약서 <span style="color: var(--primary);">❗필수 지참</span></li>
+                        <li>반명함 또는 증명사진 2장</li>
+                        <li>자동이체통장사본 (매달 관리비 5,000원)</li>
+                        <li>사업자등록증 (유가보조금카드 신청시)</li>
+                    </ul>
+                    <div style="margin-top: 1rem; background: var(--bg); padding: 0.75rem; border-radius: 8px;">
+                        <p style="font-weight: 600; color: var(--primary);">📌 택배등록비: 30,000원 (카드대납 가능)</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-number">4</div>
+                <div class="step-content">
+                    <h3>관할 시청에서 허가증 수령</h3>
+                    <p>최종 화물자동차 운송사업 허가증을 수령합니다.</p>
+                    <div style="margin-top: 1rem; background: var(--bg); padding: 0.75rem; border-radius: 8px;">
+                        <p style="font-weight: 600; color: var(--primary);">💰 운전면허세: 27,000원 납부</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-number">5</div>
+                <div class="step-content">
+                    <h3>배번호 등록 완료</h3>
+                    <p>다음 서류를 정리하여 보관합니다:</p>
+                    <ul>
+                        <li>차량등록증 사본 1장</li>
+                        <li>화물자동차 운송사업 허가증 1장</li>
+                        <li>배넘버 자동차등록증 사본 1장</li>
+                        <li>화물운송자격증 사본 1장</li>
+                        <li>배넘버 허가증 사본 1장</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Total Cost Summary -->
+        <div class="info-box" style="margin: 2rem 0; border-left: 4px solid var(--secondary);">
+            <strong style="color: var(--secondary);">💡 전체 소요 비용</strong>
+            <div style="margin-top: 1rem;">
+                <table class="cost-table" style="margin: 0;">
+                    <tr>
+                        <td><strong>시청 관련 비용</strong></td>
+                        <td class="cost" style="text-align: right;"><strong>42,300원</strong></td>
+                    </tr>
+                    <tr>
+                        <td><strong>협회 등록비</strong></td>
+                        <td class="cost" style="text-align: right;"><strong>30,000원</strong></td>
+                    </tr>
+                    <tr style="background: linear-gradient(135deg, rgba(249, 115, 22, 0.05), rgba(249, 115, 22, 0.02));">
+                        <td><strong style="font-size: 1.05rem;">합계</strong></td>
+                        <td class="cost" style="text-align: right; font-size: 1.1rem;"><strong>72,300원</strong></td>
+                    </tr>
+                </table>
+                <p style="margin-top: 1rem; font-size: 0.9rem; color: var(--text-light);">※ 화물보험 가입비는 별도 (보험사 및 상품에 따라 상이)</p>
+            </div>
+        </div>
+
+        <!-- Quick Contact Section -->
+        <h2 class="section-title" id="contact">빠른 연락처</h2>
+        <div class="quick-contact">
+            <h3>주요 연락처</h3>
+            <div class="contact-item">
+                <span class="contact-label">쿠팡 핫라인</span>
+                <span class="contact-value">1661-1151</span>
+                <button class="copy-btn" onclick="copyToClipboard('1661-1151')">복사</button>
+            </div>
+            <div class="contact-item">
+                <span class="contact-label">배번호 신청</span>
+                <span class="contact-value">구글 폼</span>
+                <a href="https://forms.gle/W3jcDGWmP8g6AKGVA" target="_blank" class="cta-button" style="margin-left: auto; padding: 0.4rem 0.8rem; margin-top: 0;">이동</a>
+            </div>
+            <div class="contact-item">
+                <span class="contact-label">벤더 가입</span>
+                <span class="contact-value">쿠팡 DFS</span>
+                <a href="https://dfs.coupang.com/dfs/qf-onboarding?COU000003236" target="_blank" class="cta-button" style="margin-left: auto; padding: 0.4rem 0.8rem; margin-top: 0;">이동</a>
+            </div>
+        </div>
+
+        <!-- Important Notes -->
+        <div class="info-box" style="margin: 2rem 0;">
+            <strong>📌 중요 사항</strong>
+            <ul style="margin-top: 0.75rem; list-style-position: inside; color: var(--text-light);">
+                <li>화물보험 가입은 차량등록소 방문 전에 반드시 완료해야 합니다.</li>
+                <li>택배전속계약서는 운송사업협회 방문 시 필수 지참 서류입니다.</li>
+                <li>모든 절차는 관할 지역의 시청과 협회에서 진행됩니다.</li>
+                <li>플렉스 아이디는 개인 비밀번호로 변경 후 안전하게 보관하세요.</li>
+                <li>팀즈 앱 설치는 캠프와의 원활한 소통을 위해 필수입니다.</li>
+            </ul>
+        </div>
     </div>
 
-    <!-- ��й�ȣ ���� -->
-    <div class="pw-section">
-      <button class="pw-toggle" onclick="togglePwForm(this)">
-        ?? ��й�ȣ ���� <span id="pw-arrow">��</span>
-      </button>
-      <div class="pw-form" id="pw-form">
-        <div class="pw-row">
-          <input type="password" id="pw-current" placeholder="���� ��й�ȣ">
-          <input type="password" id="pw-new"     placeholder="�� ��й�ȣ (4�� �̻�)">
-          <input type="password" id="pw-confirm" placeholder="�� ��й�ȣ Ȯ��">
-          <button class="btn-pw-change" onclick="changePassword()">����</button>
-        </div>
-        <div class="pw-msg hidden" id="pw-msg"></div>
-      </div>
-    </div>
+    <footer class="footer">
+        <p>&copy; 2024 러너로지스. 모든 정보는 정기적으로 업데이트됩니다.</p>
+        <p>운영 관련 문의는 각 캠프 담당자에게 연락해주세요.</p>
+    </footer>
 
-  </div>
-</div>
+    <script>
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                alert('복사되었습니다: ' + text);
+            }).catch(err => {
+                console.error('복사 실패:', err);
+            });
+        }
 
-<div class="toast" id="toast"></div>
+        // Toggle step details
+        function toggleStep(element) {
+            element.classList.toggle('active');
+        }
 
-<script>
-// ?????? ���� ??????
-let currentUser  = null;   // { userId, name }
-let treeData     = [];     // getSettlementList() ��ȯ��
-let selectedFile = null;   // ���� ���õ� ���� ��ü
-
-// ?????? �α��� ??????
-function doLogin() {
-  const userId   = document.getElementById('inp-id').value.trim();
-  const password = document.getElementById('inp-pw').value;
-  const errEl    = document.getElementById('login-error');
-  const btn      = document.getElementById('btn-login');
-
-  errEl.classList.add('hidden');
-  if (!userId || !password) { showErr(errEl, '���̵�� ��й�ȣ�� �Է��ϼ���.'); return; }
-
-  btn.disabled = true;
-  btn.innerHTML = '<span class="spinner"></span> Ȯ�� ��...';
-
-  google.script.run
-    .withSuccessHandler(res => {
-      btn.disabled = false; btn.textContent = '�α���';
-      if (res.success) {
-        console.log("�α��� ����:", JSON.stringify(res));  // �� �����
-        currentUser = { userId: res.userId, name: res.name };
-        console.log("currentUser:", JSON.stringify(currentUser));  // �� �����
-        switchToDash();
-      } else {
-        showErr(errEl, res.message || '�α��� ����');
-        document.getElementById('inp-pw').value = '';
-      }
-    })
-    .withFailureHandler(() => {
-      btn.disabled = false; btn.textContent = '�α���';
-      showErr(errEl, '���� ���� ������ �߻��߽��ϴ�.');
-    })
-    .verifyLogin(userId, password);
-}
-
-// ?????? ��ú��� ��ȯ ??????
-function switchToDash() {
-  document.getElementById('screen-login').style.display = 'none';
-  document.getElementById('screen-dash').style.display  = 'block';
-  document.getElementById('topbar-user').innerHTML =
-    '<strong>' + currentUser.name + '</strong> ����&nbsp;&nbsp;��&nbsp;&nbsp;' + currentUser.userId;
-  loadSettlements();
-}
-
-// ?????? �α׾ƿ� ??????
-function doLogout() {
-  currentUser = null; treeData = []; selectedFile = null;
-  document.getElementById('screen-dash').style.display  = 'none';
-  document.getElementById('screen-login').style.display = 'flex';
-  document.getElementById('inp-id').value = '';
-  document.getElementById('inp-pw').value = '';
-  document.getElementById('file-list-wrap').innerHTML =
-    '<div class="empty-msg"><span class="spinner"></span> ����̺꿡�� �ҷ����� ��...</div>';
-  document.getElementById('viewer-placeholder').classList.remove('hidden');
-  document.getElementById('viewer-content').classList.add('hidden');
-  document.getElementById('pdf-frame').style.display = 'none';
-}
-
-// ?????? ���꼭 ��� �ε� ??????
-function loadSettlements() {
-  console.log("loadSettlements ȣ�� - currentUser:", JSON.stringify(currentUser));  // �� �����
-  google.script.run
-    .withSuccessHandler(res => {
-      if (!res.success) {
-        document.getElementById('file-list-wrap').innerHTML =
-          '<div class="empty-msg" style="color:#C0392B;">' + (res.message || '����') + '</div>';
-        return;
-      }
-      treeData = res.data || [];
-      renderTree();
-      updateSummary();
-    })
-    .withFailureHandler(() => {
-      document.getElementById('file-list-wrap').innerHTML =
-        '<div class="empty-msg" style="color:#C0392B;">��� �ε� ����</div>';
-    })
-    .getSettlementList(currentUser.name, currentUser.userId);   // �� �̸� + ���̵�� ���� ��Ī
-}
-
-// ?????? ����/�� Ʈ�� ������ ??????
-function renderTree() {
-  const wrap = document.getElementById('file-list-wrap');
-
-  // ��ü ���� �� ����
-  let total = 0;
-  treeData.forEach(y => { total += y.months.length; });
-  document.getElementById('list-badge').textContent = total + '��';
-
-  if (total === 0) {
-    wrap.innerHTML = '<div class="empty-msg">��ϵ� ���꼭�� �����ϴ�.<br><small>�����ڿ��� �����ϼ���.</small></div>';
-    return;
-  }
-
-  let html = '';
-  treeData.forEach((yearGroup, yi) => {
-    const isFirstYear = (yi === 0);
-    html += `
-      <div class="year-group">
-        <div class="year-header" onclick="toggleYear(${yi})">
-          <span>?? ${yearGroup.year}�� (${yearGroup.months.length}��)</span>
-          <span class="year-arrow ${isFirstYear ? 'open' : ''}" id="yarrow-${yi}">��</span>
-        </div>
-        <div class="month-list ${isFirstYear ? 'open' : ''}" id="ymonths-${yi}">
-    `;
-    yearGroup.months.forEach((m, mi) => {
-      html += `
-        <div class="month-item" id="mitem-${yi}-${mi}" onclick="selectMonth(${yi},${mi})">
-          <div>
-            <div class="m-label">${m.label}</div>
-            <div class="m-sub">${m.file.name} &nbsp;��&nbsp; ${m.file.size}</div>
-          </div>
-          <span class="pdf-badge">PDF</span>
-        </div>
-      `;
-    });
-    html += '</div></div>';
-  });
-
-  wrap.innerHTML = html;
-}
-
-// ���� �׷� ����/��ġ��
-function toggleYear(yi) {
-  const months = document.getElementById('ymonths-' + yi);
-  const arrow  = document.getElementById('yarrow-' + yi);
-  const isOpen = months.classList.toggle('open');
-  arrow.classList.toggle('open', isOpen);
-}
-
-// ?????? �� ���� ??????
-function selectMonth(yi, mi) {
-  // ���� ���� ����
-  document.querySelectorAll('.month-item').forEach(el => el.classList.remove('active'));
-  document.getElementById('mitem-' + yi + '-' + mi).classList.add('active');
-
-  const monthObj   = treeData[yi].months[mi];
-  selectedFile     = monthObj.file;
-
-  document.getElementById('v-period').textContent   = monthObj.label;
-  document.getElementById('v-filename').textContent = selectedFile.name;
-  document.getElementById('v-meta').textContent     =
-    '���� ũ��: ' + selectedFile.size + '  ��  �����: ' + selectedFile.createdAt;
-
-  document.getElementById('viewer-placeholder').classList.add('hidden');
-  document.getElementById('viewer-content').classList.remove('hidden');
-
-  // iframe �ʱ�ȭ
-  const frame = document.getElementById('pdf-frame');
-  frame.style.display = 'none';
-  frame.src = '';
-
-  const btn = document.getElementById('btn-dl');
-  btn.textContent = '? �ٿ�ε�';
-  btn.disabled = false;
-  btn.style.background = '';
-}
-
-// ?????? ��� ī�� ������Ʈ ??????
-function updateSummary() {
-  let total = 0;
-  treeData.forEach(y => { total += y.months.length; });
-  document.getElementById('sum-total').textContent = total + '��';
-
-  if (treeData.length > 0) {
-    const oldest = treeData[treeData.length - 1].year;
-    const newest = treeData[0].year;
-    document.getElementById('sum-years').textContent =
-      oldest === newest ? oldest + '��' : oldest + ' ~ ' + newest;
-
-    const latestGroup = treeData[0];
-    if (latestGroup.months.length > 0) {
-      document.getElementById('sum-latest').textContent = latestGroup.months[0].label;
-    }
-  }
-}
-
-// ?????? PDF ���� (���� ����̺� �̸�����) ??????
-function viewPdf() {
-  if (!selectedFile) return;
-  const frame = document.getElementById('pdf-frame');
-
-  // �̹� ���������� �ݱ�
-  if (frame.style.display === 'block') {
-    frame.style.display = 'none';
-    frame.src = '';
-    return;
-  }
-
-  showToast('PDF�� �ҷ����� ���Դϴ�...');
-
-  // ���� ����̺� �̸����� URL ���� ��� (ũ�� Blob ���� ��ȸ)
-  const previewUrl = "https://drive.google.com/file/d/" + selectedFile.id + "/preview";
-  frame.src = previewUrl;
-  frame.style.display = 'block';
-  showToast('���꼭�� �ҷ��Խ��ϴ�.');
-}
-
-// ?????? PDF �ٿ�ε� (���� ����̺� ���� �ٿ�ε�) ??????
-function downloadPdf() {
-  if (!selectedFile) return;
-  const btn = document.getElementById('btn-dl');
-  btn.disabled = true;
-  btn.innerHTML = '<span class="spinner"></span> �ٿ�ε� ��...';
-
-  // ���� ����̺� ���� �ٿ�ε� URL
-  const downloadUrl = "https://drive.google.com/uc?export=download&id=" + selectedFile.id;
-  const a = document.createElement('a');
-  a.href = downloadUrl;
-  a.download = selectedFile.name;
-  a.target = '_blank';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-
-  btn.textContent = '? �Ϸ�';
-  btn.style.background = '#2E7D32';
-  setTimeout(() => {
-    btn.textContent = '? �ٿ�ε�';
-    btn.style.background = '';
-    btn.disabled = false;
-  }, 2500);
-}
-
-// ?????? ��й�ȣ ���� ??????
-function togglePwForm() {
-  const form  = document.getElementById('pw-form');
-  const arrow = document.getElementById('pw-arrow');
-  const open  = form.classList.toggle('open');
-  arrow.textContent = open ? '��' : '��';
-}
-
-function changePassword() {
-  const cur = document.getElementById('pw-current').value;
-  const nw  = document.getElementById('pw-new').value;
-  const cf  = document.getElementById('pw-confirm').value;
-  if (!cur || !nw || !cf) { setPwMsg('err', '��� �׸��� �Է��ϼ���.'); return; }
-  if (nw !== cf)           { setPwMsg('err', '�� ��й�ȣ�� ��ġ���� �ʽ��ϴ�.'); return; }
-  if (nw.length < 4)       { setPwMsg('err', '�� ��й�ȣ�� 4�� �̻��̾�� �մϴ�.'); return; }
-
-  google.script.run
-    .withSuccessHandler(res => {
-      if (res.success) {
-        setPwMsg('ok', '? ��й�ȣ�� ����Ǿ����ϴ�.');
-        ['pw-current','pw-new','pw-confirm'].forEach(id => document.getElementById(id).value = '');
-      } else {
-        setPwMsg('err', res.message || '���� ����');
-      }
-    })
-    .withFailureHandler(() => setPwMsg('err', '���� ����'))
-    .changePassword(currentUser.userId, cur, nw);
-}
-
-// ?????? ��ƿ ??????
-function base64ToUint8(b64) {
-  const s = atob(b64); const a = new Uint8Array(s.length);
-  for (let i = 0; i < s.length; i++) a[i] = s.charCodeAt(i);
-  return a;
-}
-
-function showErr(el, msg) { el.textContent = msg; el.classList.remove('hidden'); }
-
-function setPwMsg(type, msg) {
-  const el = document.getElementById('pw-msg');
-  el.textContent = msg; el.className = 'pw-msg ' + type;
-}
-
-function showToast(msg) {
-  const el = document.getElementById('toast');
-  el.textContent = msg; el.classList.add('show');
-  setTimeout(() => el.classList.remove('show'), 2500);
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-  document.getElementById('inp-pw').addEventListener('keydown', e => { if (e.key==='Enter') doLogin(); });
-  document.getElementById('inp-id').addEventListener('keydown', e => { if (e.key==='Enter') document.getElementById('inp-pw').focus(); });
-});
-</script>
+        // Smooth scroll for navigation
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth' });
+                }
+            });
+        });
+    </script>
 </body>
 </html>
